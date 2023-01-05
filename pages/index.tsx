@@ -23,9 +23,28 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (event === "SIGNED_OUT") {
           setUser(session?.user);
+        }
+        if (event === "SIGNED_IN") {
+          if (!session || !session?.user) return;
+
+          // check public.users table for existing user
+          const { data: existingUser } = await supabase
+            .from("users")
+            .select()
+            .eq("id", session?.user.id);
+
+          if (existingUser?.length === 0) {
+            console.log("got here");
+            await supabase.from("users").insert([
+              {
+                username: session?.user.email,
+                id: session?.user.id,
+              },
+            ]);
+          }
         }
       }
     );

@@ -26,11 +26,6 @@ export default function Login() {
     }
 
     if (data) {
-      // alert("Check inbox for confirmation e-mail");
-
-      // form.reset();
-      // await router.push("/");
-
       const userReply = confirm("Check inbox for confirmation e-mail");
       if (userReply) {
         form.reset();
@@ -50,17 +45,22 @@ export default function Login() {
         theme="default"
       /> */}
       <form className="space-y-2" onSubmit={handleSubmit}>
-        <div>
+        <div className="space-y-4">
           <label className="block text-xl font-semibold" htmlFor="email">
             Email
           </label>
           <input
-            className="form-input w-full space-y-2"
+            className="form-input w-full"
             type="email"
             name="email"
             id="email"
           />
-          <button type="submit">Sign in</button>
+          <button
+            className="my-2 border border-neutral-500 rounded-md px-2 py-1"
+            type="submit"
+          >
+            Sign in
+          </button>
         </div>
       </form>
     </div>

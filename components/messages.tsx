@@ -29,8 +29,13 @@ export default function Messages({ userId }: { userId: string | undefined }) {
   };
 
   useEffect(() => {
+    if (!userId) {
+      setMessages([]);
+      return;
+    }
+
     fetchData();
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     const subscriptionChan = supabase

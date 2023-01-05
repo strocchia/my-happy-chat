@@ -23,8 +23,6 @@ export default function Messages({ userId }: { userId: string | undefined }) {
       .from("messages")
       .select("*, profile:users(*)");
 
-    //   if (!messages) return;
-
     setMessages(messages || []);
   };
 

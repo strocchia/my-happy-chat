@@ -81,9 +81,7 @@ const Home: NextPage = () => {
 
     const { error } = await supabase.from("messages").insert({
       message,
-      // user_id: userId,
       user_id: user?.id,
-      // user_id: (await supabase.auth.getUser()).data?.user?.id,
     });
 
     if (error) {

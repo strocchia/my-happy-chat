@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import supabase from "../utils/supabase";
 import { useRouter } from "next/router";
 
@@ -6,6 +6,8 @@ import { Auth, ThemeMinimal } from "@supabase/auth-ui-react";
 
 export default function Login() {
   const router = useRouter();
+
+  const [statusText, setStatusText] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,16 +28,15 @@ export default function Login() {
     }
 
     if (data) {
-      const userReply = confirm("Check inbox for confirmation e-mail");
-      if (userReply) {
-        form.reset();
-        router.push("/");
-      }
+      setStatusText("Check inbox for confirmation e-mail");
+
+      form.reset();
+      // router.push("/");
     }
   };
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-2xl items-center justify-center px-4">
+    <div className="mx-auto flex flex-col min-h-screen max-w-2xl items-center justify-center px-4">
       {/* <Auth
         supabaseClient={supabase}
         view="magic_link"
@@ -63,6 +64,16 @@ export default function Login() {
           </button>
         </div>
       </form>
+      {statusText && (
+        <>
+          <p className="mt-10 text-emerald-600 font-semibold italic">
+            {statusText}
+          </p>
+          <a className="underline hover:no-underline duration-200" href="/">
+            Go Home
+          </a>
+        </>
+      )}
     </div>
   );
 }

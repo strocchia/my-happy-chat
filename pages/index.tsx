@@ -4,55 +4,10 @@ import Image from "next/image";
 import Messages from "../components/messages";
 import supabase from "../utils/supabase";
 import React, { useState, useEffect } from "react";
-import { type User } from "@supabase/supabase-js";
+import { useSession, useUser } from "../utils/AuthContext";
 
 const Home: NextPage = () => {
-  const [user, setUser] = useState<User>();
-
-  useEffect(() => {
-    async function fetchUser() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      setUser(session?.user);
-    }
-
-    fetchUser();
-  }, []);
-
-  useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === "SIGNED_OUT") {
-          setUser(session?.user);
-        }
-        if (event === "SIGNED_IN") {
-          if (!session || !session?.user) return;
-
-          // check public.users table for existing user
-          const { data: existingUser } = await supabase
-            .from("users")
-            .select()
-            .eq("id", session?.user.id);
-
-          if (existingUser?.length === 0) {
-            console.log("got here");
-            await supabase.from("users").insert([
-              {
-                username: session?.user.email,
-                id: session?.user.id,
-              },
-            ]);
-          }
-        }
-      }
-    );
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, [supabase]);
+  const user = useUser();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -70,12 +25,6 @@ const Home: NextPage = () => {
       form.reset();
       return;
     }
-
-    // const {
-    //   data: { user },
-    // } = await supabase.auth.getUser();
-
-    // console.log(user);
 
     form.reset();
 
@@ -97,38 +46,45 @@ const Home: NextPage = () => {
       </Head>
 
       {/* <main className="flex h-full w-full flex-1 flex-col items-stretch bg-blue-200 px-20"> */}
-      <main className="flex w-5/6 flex-1 flex-col px-10 py-4 text-gray-900 bg-blue-100 text-center">
-        {user ? (
-          <button
-            className="w-1/6 rounded mb-1 border border-red-500 p-1 hover:bg-pink-100"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              // window.location.reload();
-            }}
+      <main className="flex h-full w-full flex-1 flex-col items-stretch px-10 py-3 text-gray-900 bg-blue-100 text-center">
+        <div className="w-11/12 mx-auto flex flex-col flex-1 justify-center">
+          {user ? (
+            <div className="w-1/2 text-left mb-2">
+              <span className="mx-4 text-sm">Hello, {user.email}</span>
+              <button
+                className="rounded border border-red-500 px-3 py-1 hover:bg-pink-100 hover:border-red-700"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                }}
+              >
+                Log out
+              </button>
+            </div>
+          ) : (
+            <div className="w-1/2 text-left mb-2">
+              <span className="mr-2 font-bold">=={">"}</span>
+              <a
+                className="border border-green-500 rounded-lg px-3 py-1 hover:bg-pink-100 hover:border-green-800"
+                href="/login"
+              >
+                Sign in
+              </a>
+            </div>
+          )}
+          <h1 className="text-4xl bg-green-200 p-2">Happy Chat</h1>
+          <Messages />
+          <form
+            onSubmit={handleSubmit}
+            className="max w-full justify-self-end bg-red-200 p-2"
           >
-            Log out
-          </button>
-        ) : (
-          <a
-            className="w-1/6 mb-1 border border-green-500 rounded-lg p-1 hover:bg-pink-100"
-            href="/login"
-          >
-            Sign in first
-          </a>
-        )}
-        <h1 className="text-4xl bg-green-200 p-2">Happy Chat</h1>
-        <Messages userId={user?.id} />
-        <form
-          onSubmit={handleSubmit}
-          className="max w-full justify-self-end bg-red-200 p-2"
-        >
-          <input
-            className="w-full rounded-md disabled:cursor-not-allowed"
-            disabled={!user}
-            type="text"
-            name="message"
-          />
-        </form>
+            <input
+              className="w-full rounded-md disabled:cursor-not-allowed"
+              disabled={!user}
+              type="text"
+              name="message"
+            />
+          </form>
+        </div>
       </main>
     </div>
   );

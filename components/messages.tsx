@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
+import { useUser } from "../utils/AuthContext";
 import { Database } from "../utils/db_types";
 import supabase from "../utils/supabase";
 
 type Message = Database["public"]["Tables"]["messages"]["Row"];
-type User = Database["public"]["Tables"]["users"]["Row"];
 
+type User = Database["public"]["Tables"]["users"]["Row"];
 interface MessageRcvd {
   id: number;
   inserted_at: string;
@@ -14,9 +15,11 @@ interface MessageRcvd {
   profile?: User | null;
 }
 
-export default function Messages({ userId }: { userId: string | undefined }) {
+export default function Messages() {
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesRef = useRef<HTMLDivElement>(null);
+
+  const user = useUser();
 
   const fetchData = async () => {
     const { data: messages } = await supabase
@@ -27,13 +30,12 @@ export default function Messages({ userId }: { userId: string | undefined }) {
   };
 
   useEffect(() => {
-    if (!userId) {
+    if (!user || !user.id) {
       setMessages([]);
       return;
     }
-
     fetchData();
-  }, [userId]);
+  }, [user]);
 
   useEffect(() => {
     const subscriptionChan = supabase
@@ -78,12 +80,12 @@ export default function Messages({ userId }: { userId: string | undefined }) {
           <li
             key={msg.id}
             className={
-              msg.user_id === userId
+              msg.user_id === user?.id
                 ? "self-start rounded bg-blue-300 px-2 py-1"
                 : "self-end rounded bg-gray-100 px-2 py-1"
             }
           >
-            {msg.user_id === userId && (
+            {msg.user_id === user?.id && (
               <span
                 className="block text-xs cursor-pointer hover:text-red-600"
                 onClick={async (e) => {
